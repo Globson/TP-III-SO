@@ -14,6 +14,8 @@
 
 typedef char Instrucao[20]; //Armazena uma instrução
 
+typedef char Memoria[1000];
+
 typedef struct Programa{
   Instrucao instrucoes[20]; //Armazena instruções de um programa
   int Tam; //Tamanho do programa;
