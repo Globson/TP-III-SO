@@ -87,6 +87,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   int FinalPrograma =  RetiraProgramaFila(&cpu->programa, instrucao,cpu->contadorProgramaAtual);  //-1 fila estava vazia, 1 ainda tem instrucao do programa e 0 programa chegou ao fim.
   if(FinalPrograma == 0){
     printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
+    Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
     *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
     return;
@@ -98,7 +99,9 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   }
   comando = instrucao[0];
 
-
+  if(cpu->contadorProgramaAtual==0){
+    printf("\nComencando execucao do processo de PID: %d \n",pcbTable->vetor[estadoexec->iPcbTable].pid);
+  }
   printf("\nExecucao de instrucao -> %s\n",instrucao); //Debugando
 
 
@@ -221,9 +224,9 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           break;
       case 'T': /* Termina esse processo simulado. */
           Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-          RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
-          //free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
           printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
+          //free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
+          RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
           *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
           time->time++;
           break;
