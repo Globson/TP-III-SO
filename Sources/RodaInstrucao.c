@@ -80,7 +80,10 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor guardado em CPU: %d",cpu->Quant_Inteiros);
           cpu->contadorProgramaAtual++;
           time->time++;
-          cpu->Alocado_V_inteiros = 0;
+          if(cpu->Alocado_V_inteiros){
+            cpu->Alocado_V_inteiros = 0;
+            free(cpu->valorInteiro);
+          }
           break;
       case 'D':
           token = strtok(instrucao, s);
@@ -224,7 +227,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           }
 
           cpu->contadorProgramaAtual = 0;
-          free(cpu->valorInteiro);
+          //free(cpu->valorInteiro);
 
           time->time++;
           break;
