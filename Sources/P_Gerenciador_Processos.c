@@ -25,7 +25,7 @@ Processo criarPrimeiroSimulado(Programa *programa, Time *time, int Quant_Instruc
   processo.prioridade = 0; // Necessário mexer
   processo.CotaCPU = 0;
   processo.startupTime = time->time;
-  processo.Estado_Processo.Inteiro = 0;
+  processo.Estado_Processo.Inteiro = NULL;
   processo.Estado_Processo.Cont = 0;
   processo.Estado_Processo.Alocado_V_inteiros =0;
   processo.Estado_Processo.Quant_Inteiros =0;
@@ -46,6 +46,8 @@ Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instru
   processo.startupTime = time->time;
   if(processoPai->Estado_Processo.Alocado_V_inteiros)
       processo.Estado_Processo.Inteiro = (int*)malloc(sizeof(int)*processoPai->Estado_Processo.Quant_Inteiros);
+  else
+      processo.Estado_Processo.Inteiro = NULL;
   processo.Estado_Processo.Cont = Num_instrucao;
   processo.Estado_Processo.Tam = processoPai->Estado_Processo.Tam;
   processo.Estado_Processo.Alocado_V_inteiros = processoPai->Estado_Processo.Alocado_V_inteiros;
