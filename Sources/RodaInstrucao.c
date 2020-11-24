@@ -49,7 +49,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
     *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
     return;
   }
-  else if(FinalPrograma == -1){
+  else if(FinalPrograma == -1){ //Se fila esta vazia, nao considerar
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
     *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
     return;
@@ -179,6 +179,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           break;
       case 'T': /* Termina esse processo simulado. */
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
+          free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
           *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
           time->time++;
           break;
@@ -193,10 +194,19 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           n1 = atoi(aux2);
           // printf("Valor 1: %d\n", n1);
           novoProcesso = criarProcessoSimulado(time, processo, n1);
-           if(processo->Estado_Processo.Alocado_V_inteiros!=0)
+           if(processo->Estado_Processo.Alocado_V_inteiros!=0){
+             int alocado = 0; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
               for(int k=0; k<processo->Estado_Processo.Quant_Inteiros;k++){
                   novoProcesso.Estado_Processo.Inteiro[k]= cpu->valorInteiro[k];
-             }
+                  printf("\nValor na variavel na posição %d: %d", k, cpu->valorInteiro[k]);
+                  if(!alocado){
+                    AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,0,&novoProcesso.Estado_Processo.Pos_Alocado);
+                    alocado = 1; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
+                  }
+                  else{
+                    AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,&novoProcesso.Estado_Processo.Pos_Alocado);
+                  }
+             }}
           EnfileiraPronto(estadopronto, &novoProcesso);
           InserePcbTable(pcbTable, novoProcesso);
           cpu->contadorProgramaAtual++; // Necessário para atualizar o contador do processo pai para a instrução logo após a instrução F.

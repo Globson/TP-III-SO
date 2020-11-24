@@ -49,6 +49,7 @@ Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instru
   else
       processo.Estado_Processo.Inteiro = NULL;
   processo.Estado_Processo.Cont = Num_instrucao;
+  processo.Estado_Processo.Pos_Alocado = 0;
   processo.Estado_Processo.Tam = processoPai->Estado_Processo.Tam;
   processo.Estado_Processo.Alocado_V_inteiros = processoPai->Estado_Processo.Alocado_V_inteiros;
   processo.Estado_Processo.Quant_Inteiros = processoPai->Estado_Processo.Quant_Inteiros;
