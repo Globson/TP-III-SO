@@ -88,6 +88,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   if(FinalPrograma == 0){
     printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
     Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+    free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
     *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
     return;
@@ -223,9 +224,9 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
           break;
       case 'T': /* Termina esse processo simulado. */
-          Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
           printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
-          //free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
+          Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+          free(cpu->valorInteiro);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
           *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
           time->time++;
