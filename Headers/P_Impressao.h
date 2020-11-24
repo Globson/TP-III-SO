@@ -5,4 +5,5 @@
 #include "RodaInstrucao.h"
 void ImprimeSistemaCompleto(Cpu* cpu, PcbTable *pcbTable, EstadoBloqueado *estadobloqueado, EstadoPronto *estadopronto);
 void ImprimeTempoMedioCiclo(Time *time);
+void PrintMemoria();
 #endif //P_IMPRESSAO_H

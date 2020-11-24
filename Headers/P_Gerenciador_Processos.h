@@ -23,6 +23,7 @@ typedef struct Cpu {
   int contadorProgramaAtual;
   int *valorInteiro;
   int Alocado_V_inteiros;
+  int Pos_Alocado;
   int Quant_Inteiros;
   int fatiaTempo;
   int fatiaTempoUsada;
