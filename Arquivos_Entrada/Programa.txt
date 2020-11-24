@@ -2,10 +2,13 @@ N 3
 D 0
 D 1
 D 2
-F 7
+V 0 10
+V 1 20
+V 2 30
+F 10
 B
-A 0 10
-S 0 11
-V 1 30
+A 0 30
+A 1 30
+A 2 30
 R Programa2.txt
 T

@@ -27,6 +27,7 @@ Processo criarPrimeiroSimulado(Programa *programa, Time *time, int Quant_Instruc
   processo.startupTime = time->time;
   processo.Estado_Processo.Inteiro = NULL;
   processo.Estado_Processo.Cont = 0;
+  processo.Estado_Processo.Pos_Alocado = 0;
   processo.Estado_Processo.Alocado_V_inteiros =0;
   processo.Estado_Processo.Quant_Inteiros =0;
   processo.Estado_Processo.Tam = Quant_Instrucoes;
@@ -76,7 +77,7 @@ Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
   cpu->Quant_Inteiros = processo.Estado_Processo.Quant_Inteiros;
   cpu->valorInteiro = processo.Estado_Processo.Inteiro;
   cpu->Alocado_V_inteiros = processo.Estado_Processo.Alocado_V_inteiros;
-
+  cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
   return processo;
 }
 Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
@@ -97,7 +98,7 @@ Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
   cpu->Quant_Inteiros = processo.Estado_Processo.Quant_Inteiros;
   cpu->valorInteiro = processo.Estado_Processo.Inteiro;
   cpu->Alocado_V_inteiros = processo.Estado_Processo.Alocado_V_inteiros;
-
+  cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
   return processo;
 }
 void FFVaziaPronto(EstadoPronto *estadopronto){
@@ -204,6 +205,7 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
   processo->CotaCPU = cpu->fatiaTempoUsada;
   processo->Estado_Processo.Alocado_V_inteiros = cpu->Alocado_V_inteiros;
   processo->Estado_Processo.Quant_Inteiros = cpu->Quant_Inteiros;
+  processo->Estado_Processo.Pos_Alocado = cpu->Pos_Alocado;
   for (int i = 0; i < processo->Estado_Processo.Tam; i++) {
       strcpy(processo->Estado_Processo.Programa[i], cpu->programa.instrucoes[i]);
   }

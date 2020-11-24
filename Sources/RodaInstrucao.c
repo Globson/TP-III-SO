@@ -142,8 +142,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           }
           n1 = atoi(aux2);
           n2 = atoi(aux3);
-          // printf("Valor 1: %d\n", n1);
-          // printf("Valor 2:%d\n", n2);
+          printf("Valor 1: %d\n", n1);
+          printf("Valor 2:%d\n", n2);
           cpu->valorInteiro[n1] += n2;
           AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
@@ -179,7 +179,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           break;
       case 'T': /* Termina esse processo simulado. */
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
-          free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
+          //free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
+          printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
           *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
           time->time++;
           break;
@@ -193,7 +194,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           }
           n1 = atoi(aux2);
           // printf("Valor 1: %d\n", n1);
-          novoProcesso = criarProcessoSimulado(time, processo, n1);
+          novoProcesso = criarProcessoSimulado(time, processo, (n1-1));
            if(processo->Estado_Processo.Alocado_V_inteiros!=0){
              int alocado = 0; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
               for(int k=0; k<processo->Estado_Processo.Quant_Inteiros;k++){
