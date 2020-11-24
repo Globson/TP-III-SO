@@ -11,8 +11,22 @@ void ImprimeSistemaCompleto(Cpu* cpu, PcbTable *pcbTable, EstadoBloqueado *estad
   printf("\n\n--Fim da impresssao do estado do sistema---\n\n");
 }
 
+void PrintMemoria(){
+    printf("\nMemoria:\n");
+    for(int i = 0;i < MAXMEM;i++){
+        if(mapadebits[i] == 1){
+            printf("%d\n",memoria[i]);
+        }
+        else{
+            printf("#\n");
+        }
+    }
+}
+
+
 void ImprimeTempoMedioCiclo(Time *time){
   double tempomedio=0;
   tempomedio = time->time/time->QuantProcessosCriados;
+  PrintMemoria();
   printf("\n---- O tempo de ciclo medio foi de %.2lf ----\n\nFinalizando...\n",tempomedio);
 }

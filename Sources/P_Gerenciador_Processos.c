@@ -9,6 +9,7 @@ void Inicializa(EstadoEmExec *estadoexec, EstadoPronto *estadopronto, EstadoBloq
   FFilaVazia(&cpu->programa);
   cpu->Alocado_V_inteiros = 0;
   cpu->Quant_Inteiros = 0;
+  cpu->valorInteiro = NULL;
   cpu->fatiaTempoUsada = 0;
   cpu->fatiaTempo = 0;
   cpu->contadorProgramaAtual = 0;

@@ -1,4 +1,38 @@
 #include "../Headers/RodaInstrucao.h"
+#include "../Headers/Estruturas_de_Dados.h"
+
+
+void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
+    int espaco = 0;
+    if(flag == 0){
+        for(int i = 0;i < MAXMEM;i++){
+            if(mapadebits[i] == 0){
+                espaco++;
+            }
+            else{
+                espaco = 0;
+            }
+            if(qtd == espaco){
+                memoria[i+1-espaco+n] = temp[n];
+                mapadebits[i] = 1;
+                *pos = i+1-espaco;
+                printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                return;
+            }
+        }
+    }
+    else{
+        memoria[*pos+n] = temp[n];
+        mapadebits[*pos+n] = 1;
+        printf("\nAlocado %d em %d\n",temp[n],*pos+n);
+        return;
+    }
+    printf("\nERRO\n");
+}
+
+
+
+
 void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcbTable, EstadoBloqueado *estadobloqueado, EstadoPronto *estadopronto, Processo *processo){
   char comando, instrucao[20];
   FILE *arqPrograma;
@@ -46,6 +80,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor guardado em CPU: %d",cpu->Quant_Inteiros);
           cpu->contadorProgramaAtual++;
           time->time++;
+          cpu->Alocado_V_inteiros = 0;
           break;
       case 'D':
           token = strtok(instrucao, s);
@@ -61,11 +96,13 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             // printf("\nENTROU em nao alocado");
             cpu->valorInteiro = (int*) malloc(sizeof(int)*cpu->Quant_Inteiros);
             cpu->valorInteiro[n1]=0;
+            AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
             cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
           }
           else{
             // printf("\nENTROU alocado");
-            cpu->valorInteiro[n1]=0; //Caso ja encontre alocado,basta inicializar tal posicao.
+            cpu->valorInteiro[n1]=0;
+            AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado); //Caso ja encontre alocado,basta inicializar tal posicao.
           }
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -85,6 +122,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           // printf("Valor 2: %d\n", n2);
           cpu->valorInteiro[n1] = n2;
+          AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -104,6 +142,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           // printf("Valor 2:%d\n", n2);
           cpu->valorInteiro[n1] += n2;
+          AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -123,6 +162,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           // printf("Valor 2:%d\n", n2);
           cpu->valorInteiro[n1] -= n2;
+          AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
