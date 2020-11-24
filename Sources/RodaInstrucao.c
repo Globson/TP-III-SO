@@ -1,6 +1,8 @@
 #include "../Headers/RodaInstrucao.h"
 #include "../Headers/Estruturas_de_Dados.h"
 
+int ultimo = 0;
+
 
 void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
     int espaco = 0;
@@ -14,7 +16,7 @@ void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
             }
             if(qtd == espaco){
                 memoria[i+1-espaco+n] = temp[n];
-                mapadebits[i] = 1;
+                mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 return;
@@ -27,7 +29,47 @@ void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return;
     }
-    printf("\nERRO\n");
+    printf("\nErro Memoria Cheia\n");
+}
+
+void AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){
+    int espaco = 0;
+    if(flag == 0){
+        for(int i = ultimo;i < MAXMEM;i++){
+            if(mapadebits[i] == 0){
+                espaco++;
+            }
+            else{
+                espaco = 0;
+            }
+            if(qtd == espaco){
+                memoria[i+1-espaco+n] = temp[n];
+                mapadebits[i+1-espaco+n] = 1;
+                *pos = i+1-espaco;
+                printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                ultimo = *pos+qtd;
+                return;
+            }
+        }
+    }
+    else{
+        memoria[*pos+n] = temp[n];
+        mapadebits[*pos+n] = 1;
+        printf("\nAlocado %d em %d\n",temp[n],*pos+n);
+        return;
+    }
+    printf("\nErro Memoria Cheia\n");
+}
+
+
+void Desaloca(int qtd,int pos){
+    for(int i = pos;i < MAXMEM;i++){
+        if((i - pos) == qtd)
+            break;
+        printf("\nDesalocando %d da pos %d",memoria[i],i);
+        mapadebits[i] = 0;
+    }
+    printf("\n");
 }
 
 
@@ -178,6 +220,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
           break;
       case 'T': /* Termina esse processo simulado. */
+          Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
           //free(cpu->valorInteiro); //Ainda to pensando em como vou fazer isso
           printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
@@ -199,7 +242,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
              int alocado = 0; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
               for(int k=0; k<processo->Estado_Processo.Quant_Inteiros;k++){
                   novoProcesso.Estado_Processo.Inteiro[k]= cpu->valorInteiro[k];
-                  printf("\nValor na variavel na posição %d: %d", k, cpu->valorInteiro[k]);
+                  //printf("\nValor na variavel na posição %d: %d", k, cpu->valorInteiro[k]);
                   if(!alocado){
                     AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,0,&novoProcesso.Estado_Processo.Pos_Alocado);
                     alocado = 1; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
