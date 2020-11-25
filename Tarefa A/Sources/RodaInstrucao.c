@@ -74,6 +74,14 @@ void Desaloca(int qtd,int pos){
     printf("\n");
 }
 
+void DesbloqueiaProcesso(EstadoBloqueado *estadobloqueado,EstadoPronto *estadopronto){
+  Processo processoDesbloqueado;
+  int desenfileirou = DesenfileiraBloqueado(estadobloqueado, &processoDesbloqueado);
+  if(desenfileirou){
+    EnfileiraPronto(estadopronto, &processoDesbloqueado);
+  }
+}
+
 
 
 
@@ -90,6 +98,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   if(FinalPrograma == 0){
     printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
     Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+    DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
     free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
     *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
@@ -235,6 +244,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
       case 'T': /* Termina esse processo simulado. */
           printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
           Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+          DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
           free(cpu->valorInteiro);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
           *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
