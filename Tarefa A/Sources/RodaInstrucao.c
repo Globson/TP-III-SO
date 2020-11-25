@@ -76,6 +76,7 @@ void Desaloca(int qtd,int pos){
 
 void DesbloqueiaProcesso(EstadoBloqueado *estadobloqueado,EstadoPronto *estadopronto){
   Processo processoDesbloqueado;
+  printf("\n Desbloqueando processo apos memoria ter sido liberada!\n");
   int desenfileirou = DesenfileiraBloqueado(estadobloqueado, &processoDesbloqueado);
   if(desenfileirou){
     EnfileiraPronto(estadopronto, &processoDesbloqueado);
