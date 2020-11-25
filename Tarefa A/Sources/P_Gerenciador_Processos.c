@@ -338,6 +338,7 @@ void ExecutaCPU2(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoe
   processo->CotaCPU = cpu->fatiaTempoUsada;
   processo->Estado_Processo.Alocado_V_inteiros = cpu->Alocado_V_inteiros;
   processo->Estado_Processo.Quant_Inteiros = cpu->Quant_Inteiros;
+  processo->Estado_Processo.Pos_Alocado = cpu->Pos_Alocado;
   for (int i = 0; i < processo->Estado_Processo.Tam; i++) {
       strcpy(processo->Estado_Processo.Programa[i], cpu->programa.instrucoes[i]);
   }

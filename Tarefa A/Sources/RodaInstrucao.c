@@ -22,6 +22,9 @@ void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
                 return;
             }
         }
+        if(*pos==0){
+          printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco!\n");
+        }
     }
     else{
         memoria[*pos+n] = temp[n];
@@ -50,6 +53,9 @@ void AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){
                 ultimo = *pos+qtd;
                 return;
             }
+        }
+        if(*pos==0){
+          printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco!\n");
         }
     }
     else{
