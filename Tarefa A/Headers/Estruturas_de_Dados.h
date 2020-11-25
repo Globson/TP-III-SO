@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #define MAXTAM 100
 #define BUFFER 256
-#define MAXMEM 100
+#define MAXMEM 15
 
 typedef char Instrucao[20]; //Armazena uma instrução
 
