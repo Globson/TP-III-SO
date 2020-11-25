@@ -4,7 +4,7 @@
 int ultimo = 0;
 
 
-void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
+int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso haja erro e 1 caso tenha sido alocado
     int espaco = 0;
     if(flag == 0){
         for(int i = 0;i < MAXMEM;i++){
@@ -19,23 +19,21 @@ void AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){
                 mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
-                return;
+                return 1;
             }
-        }
-        if(*pos==0){
-          printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco!\n");
         }
     }
     else{
         memoria[*pos+n] = temp[n];
         mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
-        return;
+        return 1;
     }
-    printf("\nErro Memoria Cheia\n");
+    printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
+    return 0;
 }
 
-void AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){
+int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso haja erro e 1 caso tenha sido alocado
     int espaco = 0;
     if(flag == 0){
         for(int i = ultimo;i < MAXMEM;i++){
@@ -51,20 +49,18 @@ void AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){
                 *pos = i+1-espaco;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 ultimo = *pos+qtd;
-                return;
+                return 1;
             }
-        }
-        if(*pos==0){
-          printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco!\n");
         }
     }
     else{
         memoria[*pos+n] = temp[n];
         mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
-        return;
+        return 1;
     }
-    printf("\nErro Memoria Cheia\n");
+    printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
+    return 0;
 }
 
 
@@ -112,7 +108,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   printf("\nExecucao de instrucao -> %s\n",instrucao); //Debugando
 
 
-  int i = 0,j=2,n1=0,n2=0;
+  int i = 0,j=2,n1=0,n2=0,verificador = 0;
   const char s[2] = " ";
   char *token;
   char *aux2,*aux3,ArquivoNovo[20]="", Path[40];
@@ -151,15 +147,22 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             // printf("\nENTROU em nao alocado");
             cpu->valorInteiro = (int*) malloc(sizeof(int)*cpu->Quant_Inteiros);
             cpu->valorInteiro[n1]=0;
-            AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
-            cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
+            verificador = AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+            if(verificador){
+              cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
+              cpu->contadorProgramaAtual++;  //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
+            }
+            else{  //em caso de falta de memoria, processo de malloc e desfeito e processo é bloqueado
+              free(cpu->valorInteiro);
+              EnfileiraBloqueado(estadobloqueado, processo);
+            }
           }
           else{
             // printf("\nENTROU alocado");
             cpu->valorInteiro[n1]=0;
             AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado); //Caso ja encontre alocado,basta inicializar tal posicao.
+            cpu->contadorProgramaAtual++; //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
           }
-          cpu->contadorProgramaAtual++;
           time->time++;
           break;
       case 'V':  /* Define o valor da variável inteira para n, onde n é um inteiro. */
