@@ -1,75 +1,109 @@
 #include "../Headers/RodaInstrucao.h"
 #include "../Headers/Estruturas_de_Dados.h"
 
-int ultimo = 0;
 
 
 int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso haja erro e 1 caso tenha sido alocado
     int espaco = 0;
     if(flag == 0){
         for(int i = 0;i < MAXMEM;i++){
-            if(mapadebits[i] == 0){
+            if(firstfit.mapadebits[i] == 0){
                 espaco++;
             }
             else{
                 espaco = 0;
             }
             if(qtd == espaco){
-                memoria[i+1-espaco+n] = temp[n];
-                mapadebits[i+1-espaco+n] = 1;
+                firstfit.memoria[i+1-espaco+n] = temp[n];
+                firstfit.mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
+                firstfit.nospercorridos += *pos;
+                firstfit.totalalocados += 1;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 return 1;
             }
         }
     }
     else{
-        memoria[*pos+n] = temp[n];
-        mapadebits[*pos+n] = 1;
+        firstfit.memoria[*pos+n] = temp[n];
+        firstfit.mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return 1;
     }
     printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
+    firstfit.erroemalocar += 1;
     return 0;
 }
 
 int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso haja erro e 1 caso tenha sido alocado
     int espaco = 0;
     if(flag == 0){
-        for(int i = ultimo;i < MAXMEM;i++){
-            if(mapadebits[i] == 0){
+        for(int i = nextfit.ultimaalocacao;i < MAXMEM;i++){
+            if(nextfit.mapadebits[i] == 0){
                 espaco++;
             }
             else{
                 espaco = 0;
             }
             if(qtd == espaco){
-                memoria[i+1-espaco+n] = temp[n];
-                mapadebits[i+1-espaco+n] = 1;
+                nextfit.memoria[i+1-espaco+n] = temp[n];
+                nextfit.mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
+                nextfit.nospercorridos += *pos;
+                nextfit.totalalocados += 1;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
-                ultimo = *pos+qtd;
+                nextfit.ultimaalocacao= *pos+qtd;
+                return 1;
+            }
+        }
+        espaco = 0;
+        for(int i = 0;i < nextfit.ultimaalocacao;i++){
+            if(nextfit.mapadebits[i] == 0){
+                espaco++;
+            }
+            else{
+                espaco = 0;
+            }
+            if(qtd == espaco){
+                nextfit.memoria[i+1-espaco+n] = temp[n];
+                nextfit.mapadebits[i+1-espaco+n] = 1;
+                *pos = i+1-espaco;
+                nextfit.nospercorridos += *pos;
+                nextfit.totalalocados += 1;
+                printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
         }
     }
     else{
-        memoria[*pos+n] = temp[n];
-        mapadebits[*pos+n] = 1;
+        nextfit.memoria[*pos+n] = temp[n];
+        nextfit.mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return 1;
     }
     printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
+    nextfit.erroemalocar += 1;
     return 0;
 }
 
 
-void Desaloca(int qtd,int pos){
+void DesalocaFirstFit(int qtd,int pos){
     for(int i = pos;i < MAXMEM;i++){
         if((i - pos) == qtd)
             break;
-        printf("\nDesalocando %d da pos %d",memoria[i],i);
-        mapadebits[i] = 0;
+        printf("\nDesalocando %d da pos %d",firstfit.memoria[i],i);
+        firstfit.mapadebits[i] = 0;
+    printf("\n");
+    }
+}
+
+void DesalocaNextFit(int qtd,int pos){
+    for(int i = pos;i < MAXMEM;i++){
+        if((i - pos) == qtd)
+            break;
+        printf("\nDesalocando %d da pos %d",nextfit.memoria[i],i);
+        nextfit.mapadebits[i] = 0;
     }
     printf("\n");
 }
@@ -98,7 +132,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   int FinalPrograma =  RetiraProgramaFila(&cpu->programa, instrucao,cpu->contadorProgramaAtual);  //-1 fila estava vazia, 1 ainda tem instrucao do programa e 0 programa chegou ao fim.
   if(FinalPrograma == 0){
     printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
-    Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+    DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
     DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
     free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
@@ -157,7 +191,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             // printf("\nENTROU em nao alocado");
             cpu->valorInteiro = (int*) malloc(sizeof(int)*cpu->Quant_Inteiros);
             cpu->valorInteiro[n1]=0;
-            verificador = AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+            verificador = AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
             if(verificador){
               cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
               cpu->contadorProgramaAtual++;  //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
@@ -170,7 +204,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           else{
             // printf("\nENTROU alocado");
             cpu->valorInteiro[n1]=0;
-            AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado); //Caso ja encontre alocado,basta inicializar tal posicao.
+            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado); //Caso ja encontre alocado,basta inicializar tal posicao.
             cpu->contadorProgramaAtual++; //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
           }
           time->time++;
@@ -190,7 +224,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           // printf("Valor 2: %d\n", n2);
           cpu->valorInteiro[n1] = n2;
-          AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+          AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -210,7 +244,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           // printf("Valor 2:%d\n", n2);
           cpu->valorInteiro[n1] += n2;
-          AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+          AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -230,7 +264,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           // printf("Valor 2:%d\n", n2);
           cpu->valorInteiro[n1] -= n2;
-          AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+          AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -244,7 +278,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           break;
       case 'T': /* Termina esse processo simulado. */
           printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
-          Desaloca(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+          DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
           DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
           free(cpu->valorInteiro);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
@@ -268,11 +302,11 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                   novoProcesso.Estado_Processo.Inteiro[k]= cpu->valorInteiro[k];
                   //printf("\nValor na variavel na posição %d: %d", k, cpu->valorInteiro[k]);
                   if(!alocado){
-                    AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,0,&novoProcesso.Estado_Processo.Pos_Alocado);
+                    AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,0,&novoProcesso.Estado_Processo.Pos_Alocado);
                     alocado = 1; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
                   }
                   else{
-                    AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,&novoProcesso.Estado_Processo.Pos_Alocado);
+                    AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,&novoProcesso.Estado_Processo.Pos_Alocado);
                   }
              }}
           EnfileiraPronto(estadopronto, &novoProcesso);
