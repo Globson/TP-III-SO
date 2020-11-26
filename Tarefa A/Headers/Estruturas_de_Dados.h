@@ -17,6 +17,11 @@
 
 typedef char Instrucao[20]; //Armazena uma instrução
 
+typedef struct Disco{
+    int memoria[MAXMEM*10];
+    int mapadebits[MAXMEM*10];
+}Disco;
+
 typedef struct FirstFit{
     int memoria[MAXMEM];
     int mapadebits[MAXMEM];
@@ -36,6 +41,7 @@ typedef struct NextFit{
     int totalfragmentos;
 }NextFit;
 
+Disco disco;
 FirstFit firstfit;
 NextFit nextfit;
 
@@ -49,6 +55,8 @@ typedef struct EstadoProcesso{
   int Quant_Inteiros;
   int Alocado_V_inteiros;
   int Pos_Alocado;
+  int V_Disco;
+  int Pos_Disco;
   int *Inteiro;
   int Cont;
   int Tam;
@@ -56,3 +64,8 @@ typedef struct EstadoProcesso{
 }EstadoProcesso;
 
 #endif //ESTRUTURAD_DE_DADOS_H
+
+int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos);
+void DesalocaDisco(int qtd,int pos);
+int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos);
+int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos);
