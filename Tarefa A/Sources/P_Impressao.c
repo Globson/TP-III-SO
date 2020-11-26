@@ -46,6 +46,7 @@ void PrintMemoriaFirstFit(){
     VerificaFragmentosFirstFit();
     printf("\nNúmero de Fragmentos: %d\n",firstfit.totalfragmentos);
     printf("\nNúmero de Nos Medios Percorridos: %d\n",firstfit.nospercorridos/firstfit.totalalocados);
+    printf("\nPorcentual de negação de alocação %d \n",firstfit.erroemalocar/firstfit.totalalocados * 100);
     printf("\nMemoria:\n");
     for(int i = 0;i < MAXMEM;i++){
         if(firstfit.mapadebits[i] == 1){
@@ -61,6 +62,7 @@ void PrintMemoriaNextFit(){
     VerificaFragmentosNextFit();
     printf("\nNúmero de Fragmentos: %d\n",nextfit.totalfragmentos);
     printf("\nNúmero de Nos Medios Percorridos: %d\n",nextfit.nospercorridos/nextfit.totalalocados);
+    printf("\nPorcentual de negação de alocação %d \n",nextfit.erroemalocar/nextfit.totalalocados * 100);
     printf("\nMemoria:\n");
     for(int i = 0;i < MAXMEM;i++){
         if(nextfit.mapadebits[i] == 1){
