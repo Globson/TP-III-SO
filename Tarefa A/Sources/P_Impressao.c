@@ -9,7 +9,10 @@ void ImprimeSistemaCompleto(Cpu* cpu, PcbTable *pcbTable, EstadoBloqueado *estad
   printf("\n\n");
   ImprimePcbTable(pcbTable);
   printf("\n\n--Fim da impresssao do estado do sistema---\n\n");
-  PrintMemoriaNextFit();
+  if(FIRSTFIT)
+    PrintMemoriaFirstFit();
+  else
+    PrintMemoriaNextFit();
 }
 
 void VerificaFragmentosFirstFit(){
@@ -47,7 +50,7 @@ void PrintMemoriaFirstFit(){
     printf("\nNúmero de Fragmentos: %d\n",firstfit.totalfragmentos);
     printf("\nNúmero de Nos Medios Percorridos: %d\n",firstfit.nospercorridos/firstfit.totalalocados);
     printf("\nPorcentual de negação de alocação %d \n",firstfit.erroemalocar/firstfit.totalalocados * 100);
-    printf("\nMemoria:\n");
+    printf("\nMemoria FirstFit:\n");
     for(int i = 0;i < MAXMEM;i++){
         if(firstfit.mapadebits[i] == 1){
             printf("%d\n",firstfit.memoria[i]);
@@ -63,7 +66,7 @@ void PrintMemoriaNextFit(){
     printf("\nNúmero de Fragmentos: %d\n",nextfit.totalfragmentos);
     printf("\nNúmero de Nos Medios Percorridos: %d\n",nextfit.nospercorridos/nextfit.totalalocados);
     printf("\nPorcentual de negação de alocação %d \n",nextfit.erroemalocar/nextfit.totalalocados * 100);
-    printf("\nMemoria:\n");
+    printf("\nMemoria NextFit:\n");
     for(int i = 0;i < MAXMEM;i++){
         if(nextfit.mapadebits[i] == 1){
             printf("%d\n",nextfit.memoria[i]);

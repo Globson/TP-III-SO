@@ -12,6 +12,8 @@
 #define MAXTAM 100
 #define BUFFER 256
 #define MAXMEM 15
+#define FIRSTFIT 1 //1 para Firstfit e 0 para NextFit
+
 
 typedef char Instrucao[20]; //Armazena uma instrução
 
