@@ -23,10 +23,18 @@ void iniciamemoria(){
     nextfit.ultimaalocacao = 0;
 }
 
+void iniciadisco(){
+    for(int i = 0;i < MAXMEM*10;i++){
+        disco.mapadebits[i] = 0;
+        disco.memoria[i] = 0;
+    }
+}
+
 
 int main(int argc, char const *argv[]) {
   srand(time(NULL));
   iniciamemoria();
+  iniciadisco();
   //Test(memoria);
   Executar_P_Controle();
   printf("\n\tExecutou TUDO!");
