@@ -15,12 +15,27 @@
 
 typedef char Instrucao[20]; //Armazena uma instrução
 
-typedef int Memoria[MAXMEM];
+typedef struct FirstFit{
+    int memoria[MAXMEM];
+    int mapadebits[MAXMEM];
+    int nospercorridos;
+    int totalalocados;
+    int erroemalocar;
+    int totalfragmentos;
+}FirstFit;
 
-typedef int Mapadebits[MAXMEM];
+typedef struct NextFit{
+    int memoria[MAXMEM];
+    int mapadebits[MAXMEM];
+    int nospercorridos;
+    int ultimaalocacao;
+    int totalalocados;
+    int erroemalocar;
+    int totalfragmentos;
+}NextFit;
 
-Mapadebits mapadebits;
-Memoria memoria;
+FirstFit firstfit;
+NextFit nextfit;
 
 typedef struct Programa{
   Instrucao instrucoes[20]; //Armazena instruções de um programa
