@@ -206,6 +206,8 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
   processo->Estado_Processo.Alocado_V_inteiros = cpu->Alocado_V_inteiros;
   processo->Estado_Processo.Quant_Inteiros = cpu->Quant_Inteiros;
   processo->Estado_Processo.Pos_Alocado = cpu->Pos_Alocado;
+  processo->Estado_Processo.Pos_Disco = cpu->Pos_Disco;
+  processo->Estado_Processo.V_Disco = cpu->V_Disco;
   for (int i = 0; i < processo->Estado_Processo.Tam; i++) {
       strcpy(processo->Estado_Processo.Programa[i], cpu->programa.instrucoes[i]);
   }
@@ -218,6 +220,11 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
         processo->prioridade++;
         pcbTable->vetor[estadoexec->iPcbTable].prioridade++;
       }
+      AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
+      for(int i = 1;i < cpu->Quant_Inteiros;i++){
+        AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
+        }
+      cpu->Alocado_V_inteiros = 0;
       EnfileiraBloqueado(estadobloqueado, processo);
       *processo = ColocaOutroProcessoCPU(cpu,estadopronto);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
     }

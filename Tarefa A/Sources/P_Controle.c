@@ -109,6 +109,15 @@ int Executar_P_Controle(){
             case 'L': // Desbloqueia o primeiro processo simulado na fila bloqueada.
                 desenfileirou = DesenfileiraBloqueado(&estadobloqueado, &processoDesbloqueado);
                 if(desenfileirou){
+                  DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
+                  for(int i = 0;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
+                    if(FIRSTFIT)
+                    AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+                    i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                    else
+                    AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+                    i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                  }
                   EnfileiraPronto(&estadopronto, &processoDesbloqueado);
                   // processo = colocarProcessoCPU(&cpu, &estadopronto);
                 }

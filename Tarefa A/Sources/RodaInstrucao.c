@@ -1,6 +1,35 @@
 #include "../Headers/RodaInstrucao.h"
 #include "../Headers/Estruturas_de_Dados.h"
 
+int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso haja erro e 1 caso tenha sido alocado
+    int espaco = 0;
+    if(flag == 0){
+        for(int i = 0;i < MAXMEM*10;i++){
+            if(disco.mapadebits[i] == 0){
+                espaco++;
+            }
+            else{
+                espaco = 0;
+            }
+            if(qtd == espaco){
+                disco.memoria[i+1-espaco+n] = temp[n];
+                disco.mapadebits[i+1-espaco+n] = 1;
+                *pos = i+1-espaco;
+                printf("\nAlocado %d em %d\n no disco\n",temp[n],i+1-espaco+n);
+                return 1;
+            }
+        }
+    }
+    else{
+        disco.memoria[*pos+n] = temp[n];
+        disco.mapadebits[*pos+n] = 1;
+        printf("\nAlocado %d em %d\n no disco\n",temp[n],*pos+n);
+        return 1;
+    }
+    printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
+    return 0;
+}
+
 
 
 int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso haja erro e 1 caso tenha sido alocado
@@ -108,13 +137,32 @@ void DesalocaNextFit(int qtd,int pos){
     printf("\n");
 }
 
+void DesalocaDisco(int qtd,int pos){
+    for(int i = pos;i < MAXMEM;i++){
+        if((i - pos) == qtd)
+            break;
+        printf("\nDesalocando %d da pos %d do disco",disco.memoria[i],i);
+        disco.mapadebits[i] = 0;
+    printf("\n");
+    }
+}
+
 void DesbloqueiaProcesso(EstadoBloqueado *estadobloqueado,EstadoPronto *estadopronto){
   Processo processoDesbloqueado;
   printf("\n Desbloqueando processo apos memoria ter sido liberada!\n");
   int desenfileirou = DesenfileiraBloqueado(estadobloqueado, &processoDesbloqueado);
   if(desenfileirou){
+    DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
+    for(int i = 0;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
+        if(FIRSTFIT)
+            AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+            i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+        else
+            AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+            i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
     EnfileiraPronto(estadopronto, &processoDesbloqueado);
-  }
+        }
+    }
 }
 
 
@@ -133,9 +181,9 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   if(FinalPrograma == 0){
     printf("\nProcesso de PID: %d TERMINOU!\n",pcbTable->vetor[estadoexec->iPcbTable].pid);
     if(FIRSTFIT)
-      DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+        DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
     else
-      DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+        DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
     DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
     free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
@@ -205,8 +253,19 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             }
             else{  //em caso de falta de memoria, processo de malloc e desfeito e processo é bloqueado
               free(cpu->valorInteiro);
-              EnfileiraBloqueado(estadobloqueado, processo);
-            }
+              if (FIRSTFIT){
+                DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+               }
+              else{
+                DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+               }
+              AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
+              for(int i = 1;i < cpu->Quant_Inteiros;i++){
+                AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
+               }
+                cpu->Alocado_V_inteiros = 0;
+                EnfileiraBloqueado(estadobloqueado, processo);
+              }
           }
           else{
             // printf("\nENTROU alocado");
@@ -290,6 +349,17 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           break;
       //
       case 'B': /* Bloqueia esse processo simulado. */
+            if (FIRSTFIT){
+                DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+            }
+            else{
+                DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+            }
+          AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
+          for(int i = 1;i < cpu->Quant_Inteiros;i++){
+            AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
+            }
+          cpu->Alocado_V_inteiros = 0;
           EnfileiraBloqueado(estadobloqueado, processo);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -339,6 +409,17 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
            }
              else{
                free(novoProcesso.Estado_Processo.Inteiro);
+                if (FIRSTFIT){
+                    DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+               }
+                else{
+                    DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
+               }
+                AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
+                for(int i = 1;i < cpu->Quant_Inteiros;i++){
+                    AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
+               }
+               cpu->Alocado_V_inteiros = 0;
                EnfileiraBloqueado(estadobloqueado, processo);
              }
            }
