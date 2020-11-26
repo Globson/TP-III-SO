@@ -313,27 +313,35 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           // printf("Valor 1: %d\n", n1);
           novoProcesso = criarProcessoSimulado(time, processo, (n1-1));
            if(processo->Estado_Processo.Alocado_V_inteiros!=0){
-             int alocado = 0; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
-              for(int k=0; k<processo->Estado_Processo.Quant_Inteiros;k++){
-                  novoProcesso.Estado_Processo.Inteiro[k]= cpu->valorInteiro[k];
-                  //printf("\nValor na variavel na posição %d: %d", k, cpu->valorInteiro[k]);
-                  if(!alocado){
-                    if(FIRSTFIT)
-                      AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,0,&novoProcesso.Estado_Processo.Pos_Alocado);
-                    else
-                      AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,0,&novoProcesso.Estado_Processo.Pos_Alocado);
-                    alocado = 1; //Tive que criar um novo controle pra alocação na memoria, devido ao processo filho ter uma copia da variavel Alocado_V_inteiros
-                  }
-                  else{
+             if(FIRSTFIT)
+               verificador = AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,0,0,&novoProcesso.Estado_Processo.Pos_Alocado);
+             else
+               verificador = AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,0,0,&novoProcesso.Estado_Processo.Pos_Alocado);
+
+             if(verificador){
+                novoProcesso.Estado_Processo.Inteiro[0]= cpu->valorInteiro[0];
+                for(int k=1; k<processo->Estado_Processo.Quant_Inteiros;k++){
+                    novoProcesso.Estado_Processo.Inteiro[k]= cpu->valorInteiro[k];
                     if(FIRSTFIT)
                       AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,&novoProcesso.Estado_Processo.Pos_Alocado);
                     else
                       AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,&novoProcesso.Estado_Processo.Pos_Alocado);
-                  }
-             }}
-          EnfileiraPronto(estadopronto, &novoProcesso);
-          InserePcbTable(pcbTable, novoProcesso);
-          cpu->contadorProgramaAtual++; // Necessário para atualizar o contador do processo pai para a instrução logo após a instrução F.
+             }
+             EnfileiraPronto(estadopronto, &novoProcesso);
+             InserePcbTable(pcbTable, novoProcesso);
+             cpu->contadorProgramaAtual++;
+           }
+             else{
+               free(novoProcesso.Estado_Processo.Inteiro);
+               EnfileiraBloqueado(estadobloqueado, processo);
+             }
+           }
+           else{
+             EnfileiraPronto(estadopronto, &novoProcesso);
+             InserePcbTable(pcbTable, novoProcesso);
+             cpu->contadorProgramaAtual++;
+           }
+           // Necessário para atualizar o contador do processo pai para a instrução logo após a instrução F.
           time->time++;
           break;
       case 'R': /* Substitui o programa do processo simulado pelo programa no arquivo nome_do_arquivo e define o contador de programa para a primeira instrução desse novo programa. */
