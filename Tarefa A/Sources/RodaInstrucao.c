@@ -153,7 +153,13 @@ void DesbloqueiaProcesso(EstadoBloqueado *estadobloqueado,EstadoPronto *estadopr
   int desenfileirou = DesenfileiraBloqueado(estadobloqueado, &processoDesbloqueado);
   if(desenfileirou){
     DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
-    for(int i = 0;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
+    if(FIRSTFIT)
+        AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+            0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+    else
+        AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+            0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+    for(int i = 1;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
         if(FIRSTFIT)
             AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
             i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
@@ -187,12 +193,12 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
     DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
     free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
-    *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
+    *processo = ColocaOutroProcessoCPU(cpu, estadopronto,pcbTable);
     return;
   }
   else if(FinalPrograma == -1){ //Se fila esta vazia, nao considerar
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
-    *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
+    *processo = ColocaOutroProcessoCPU(cpu, estadopronto,pcbTable);
     return;
   }
   comando = instrucao[0];
@@ -263,7 +269,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
               for(int i = 1;i < cpu->Quant_Inteiros;i++){
                 AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
                }
-                cpu->Alocado_V_inteiros = 0;
+                //cpu->Alocado_V_inteiros = 0;
+                RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
                 EnfileiraBloqueado(estadobloqueado, processo);
               }
           }
@@ -359,7 +366,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           for(int i = 1;i < cpu->Quant_Inteiros;i++){
             AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
             }
-          cpu->Alocado_V_inteiros = 0;
+          //cpu->Alocado_V_inteiros = 0;
+          RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
           EnfileiraBloqueado(estadobloqueado, processo);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -374,7 +382,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
           free(cpu->valorInteiro);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
-          *processo = ColocaOutroProcessoCPU(cpu, estadopronto);
+          *processo = ColocaOutroProcessoCPU(cpu, estadopronto,pcbTable);
           time->time++;
           break;
       case 'F': /* Cria um novo processo simulado continuando da instrucao N. */
@@ -404,7 +412,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                       AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,&novoProcesso.Estado_Processo.Pos_Alocado);
              }
              EnfileiraPronto(estadopronto, &novoProcesso);
-             InserePcbTable(pcbTable, novoProcesso);
+             //InserePcbTable(pcbTable, novoProcesso);
              cpu->contadorProgramaAtual++;
            }
              else{
@@ -419,13 +427,14 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                 for(int i = 1;i < cpu->Quant_Inteiros;i++){
                     AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
                }
-               cpu->Alocado_V_inteiros = 0;
+               //cpu->Alocado_V_inteiros = 0;
+               RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
                EnfileiraBloqueado(estadobloqueado, processo);
              }
            }
            else{
              EnfileiraPronto(estadopronto, &novoProcesso);
-             InserePcbTable(pcbTable, novoProcesso);
+             //InserePcbTable(pcbTable, novoProcesso);
              cpu->contadorProgramaAtual++;
            }
            // Necessário para atualizar o contador do processo pai para a instrução logo após a instrução F.

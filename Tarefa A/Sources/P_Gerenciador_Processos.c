@@ -80,11 +80,11 @@ Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
   cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
   return processo;
 }
-Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
+Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,PcbTable *pcbTable){
   Processo processo;
 
   DesenfileiraPronto(estadopronto, &processo);
-
+  InserePcbTable(pcbTable, processo);
   cpu->programa.Tam = processo.Estado_Processo.Tam;
 
   FFilaVazia(&cpu->programa);
@@ -224,12 +224,13 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
       for(int i = 1;i < cpu->Quant_Inteiros;i++){
         AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
         }
-      cpu->Alocado_V_inteiros = 0;
+      //cpu->Alocado_V_inteiros = 0;
+      RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
       EnfileiraBloqueado(estadobloqueado, processo);
-      *processo = ColocaOutroProcessoCPU(cpu,estadopronto);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
+      *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
     }
    else if(!strcmp(processo->estado,"BLOQUEADO")){ //Caso uma instrucao de bloqueio tenha sido realizada
-     *processo = ColocaOutroProcessoCPU(cpu,estadopronto);
+     *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);
    }
 }
 
@@ -362,8 +363,10 @@ void ExecutaCPU2(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoe
       for(int i = 1;i < cpu->Quant_Inteiros;i++){
         AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
         }
+      cpu->Alocado_V_inteiros = 0;
+      RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
       EnfileiraBloqueado(estadobloqueado, processo);
-      *processo = ColocaOutroProcessoCPU(cpu,estadopronto);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
+      *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
     }
   else if(cpu->fatiaTempoUsada < cpu->fatiaTempo) {
       if(processo->prioridade> 0 && processo->prioridade<=3){
@@ -373,6 +376,6 @@ void ExecutaCPU2(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoe
           }
   }
    else if(!strcmp(processo->estado,"BLOQUEADO")){ //Caso uma instrucao de bloqueio tenha sido realizada
-     *processo = ColocaOutroProcessoCPU(cpu,estadopronto);
+     *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);
    }
 }

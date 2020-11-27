@@ -110,7 +110,13 @@ int Executar_P_Controle(){
                 desenfileirou = DesenfileiraBloqueado(&estadobloqueado, &processoDesbloqueado);
                 if(desenfileirou){
                   DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
-                  for(int i = 0;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
+                  if(FIRSTFIT)
+                    AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+                    0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                  else
+                    AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+                    0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                  for(int i = 1;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
                     if(FIRSTFIT)
                     AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
                     i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
