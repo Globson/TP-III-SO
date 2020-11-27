@@ -224,7 +224,7 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
       for(int i = 1;i < cpu->Quant_Inteiros;i++){
         AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
         }
-      cpu->Alocado_V_inteiros = 0;
+      //cpu->Alocado_V_inteiros = 0;
       RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
       EnfileiraBloqueado(estadobloqueado, processo);
       *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU

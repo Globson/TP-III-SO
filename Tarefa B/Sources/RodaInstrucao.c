@@ -153,7 +153,13 @@ void DesbloqueiaProcesso(EstadoBloqueado *estadobloqueado,EstadoPronto *estadopr
   int desenfileirou = DesenfileiraBloqueado(estadobloqueado, &processoDesbloqueado);
   if(desenfileirou){
     DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
-    for(int i = 0;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
+    if(FIRSTFIT)
+        AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+            0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+    else
+        AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
+            0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+    for(int i = 1;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
         if(FIRSTFIT)
             AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
             i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
@@ -263,7 +269,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
               for(int i = 1;i < cpu->Quant_Inteiros;i++){
                 AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
                }
-                cpu->Alocado_V_inteiros = 0;
+                //cpu->Alocado_V_inteiros = 0;
                 RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
                 EnfileiraBloqueado(estadobloqueado, processo);
               }
@@ -360,7 +366,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
           for(int i = 1;i < cpu->Quant_Inteiros;i++){
             AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
             }
-          cpu->Alocado_V_inteiros = 0;
+          //cpu->Alocado_V_inteiros = 0;
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
           EnfileiraBloqueado(estadobloqueado, processo);
           cpu->contadorProgramaAtual++;
@@ -421,7 +427,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                 for(int i = 1;i < cpu->Quant_Inteiros;i++){
                     AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
                }
-               cpu->Alocado_V_inteiros = 0;
+               //cpu->Alocado_V_inteiros = 0;
                RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
                EnfileiraBloqueado(estadobloqueado, processo);
              }
