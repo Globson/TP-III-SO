@@ -138,7 +138,7 @@ void DesalocaNextFit(int qtd,int pos){
 }
 
 void DesalocaDisco(int qtd,int pos){
-    for(int i = pos;i < MAXMEM;i++){
+    for(int i = pos;i < MAXMEM*10;i++){
         if((i - pos) == qtd)
             break;
         printf("\nDesalocando %d da pos %d do disco",disco.memoria[i],i);
