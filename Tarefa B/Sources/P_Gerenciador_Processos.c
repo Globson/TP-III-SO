@@ -208,6 +208,8 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
   processo->Estado_Processo.Pos_Alocado = cpu->Pos_Alocado;
   processo->Estado_Processo.Pos_Disco = cpu->Pos_Disco;
   processo->Estado_Processo.V_Disco = cpu->V_Disco;
+  processo->Estado_Processo.V_Memvirtual = cpu->V_Memvirtual;
+  processo->Estado_Processo.Pos_Memvirtual = cpu->Pos_Memvirtual;
   for (int i = 0; i < processo->Estado_Processo.Tam; i++) {
       strcpy(processo->Estado_Processo.Programa[i], cpu->programa.instrucoes[i]);
   }

@@ -112,14 +112,20 @@ int Executar_P_Controle(){
                   DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
                   if(FIRSTFIT)
                     AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
-                    0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                    0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado,
+                    &processoDesbloqueado.Estado_Processo.Pos_Memvirtual,&processoDesbloqueado.Estado_Processo.V_Memvirtual);
                   else
                     AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
                     0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                  if (processoDesbloqueado.Estado_Processo.V_Memvirtual == 1){
+                        DesalocaMemVirtual(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Memvirtual);
+                        processoDesbloqueado.Estado_Processo.V_Memvirtual = 0;
+                    }
                   for(int i = 1;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
                     if(FIRSTFIT)
                     AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
-                    i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
+                    i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado,
+                    &processoDesbloqueado.Estado_Processo.Pos_Memvirtual,&processoDesbloqueado.Estado_Processo.V_Memvirtual);
                     else
                     AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
                     i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
