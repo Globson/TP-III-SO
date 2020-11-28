@@ -75,6 +75,8 @@ typedef struct EstadoProcesso{
 
 int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos);
 void DesalocaDisco(int qtd,int pos);
-int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos);
+int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag);
 int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag);
 void DesalocaMemVirtual(int qtd,int pos);
+void DesalocaFirstFit(int qtd,int pos);
+void DesalocaNextFit(int qtd,int pos);
