@@ -31,20 +31,6 @@ int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso h
     return 0;
 }
 
-int MMU(int endereco){
-    if(endereco < MAXMEM){
-        return endereco;
-    }
-    else{
-        return endereco-MAXMEM;
-    }
-}
-/*
-void DesalocaProcesso(PcbTable *pcbTable,EstadoBloqueado *estadobloqueado){
-          EnfileiraBloqueado(estadobloqueado, pcbTable);
-          RetiraPcbTable(pcbTable, 0, &pcbTable->vetor[pcbTable->Primeiro]->Estado_Processo);
-}
-*/
 
 int AlocaMemVirtual(int temp[],int qtd,int n,int *vflag,int *pos){  // retorna 0 caso haja erro e 1 caso tenha sido alocado
     int espaco = 0;
@@ -106,12 +92,10 @@ int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vfla
         AlocaMemVirtual(temp,qtd,n,vflag,vpos);
         //npos = MMU(*vpos);
         }
-    //DesalocaProcesso(&pcbTable,&estadobloqueado);
-    AlocaFirstFit(temp,qtd,n,flag,pos,vpos,vflag);
-    return 1;
+    return 0;
 }
 
-int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso haja erro e 1 caso tenha sido alocado
+int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag){ // retorna 0 caso haja erro e 1 caso tenha sido alocado
     int espaco = 0;
     if(flag == 0){
         for(int i = nextfit.ultimaalocacao;i < MAXMEM;i++){
@@ -159,7 +143,10 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso 
         return 1;
     }
     printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
-    nextfit.erroemalocar += 1;
+    if(*vflag == 0){
+        AlocaMemVirtual(temp,qtd,n,vflag,vpos);
+        //npos = MMU(*vpos);
+    }
     return 0;
 }
 
@@ -204,36 +191,6 @@ void DesalocaDisco(int qtd,int pos){
     }
 }
 
-void DesbloqueiaProcesso(EstadoBloqueado *estadobloqueado,EstadoPronto *estadopronto){
-  Processo processoDesbloqueado;
-  printf("\n Desbloqueando processo apos memoria ter sido liberada!\n");
-  int desenfileirou = DesenfileiraBloqueado(estadobloqueado, &processoDesbloqueado);
-  if(desenfileirou){
-    DesalocaDisco(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Disco);
-    if(FIRSTFIT)
-        AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
-            0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado,
-            &processoDesbloqueado.Estado_Processo.Pos_Memvirtual,&processoDesbloqueado.Estado_Processo.V_Memvirtual);
-    else
-        AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
-            0,0,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
-    if (processoDesbloqueado.Estado_Processo.V_Memvirtual == 1){
-        DesalocaMemVirtual(processoDesbloqueado.Estado_Processo.Quant_Inteiros,processoDesbloqueado.Estado_Processo.Pos_Memvirtual);
-        processoDesbloqueado.Estado_Processo.V_Memvirtual = 0;
-                    }
-    for(int i = 1;i < processoDesbloqueado.Estado_Processo.Quant_Inteiros;i++){
-        if(FIRSTFIT)
-            AlocaFirstFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
-            i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado,
-            &processoDesbloqueado.Estado_Processo.Pos_Memvirtual,&processoDesbloqueado.Estado_Processo.V_Memvirtual);
-        else
-            AlocaNextFit(processoDesbloqueado.Estado_Processo.Inteiro,processoDesbloqueado.Estado_Processo.Quant_Inteiros,
-            i,processoDesbloqueado.Estado_Processo.Alocado_V_inteiros,&processoDesbloqueado.Estado_Processo.Pos_Alocado);
-    EnfileiraPronto(estadopronto, &processoDesbloqueado);
-        }
-    }
-}
-
 
 
 
@@ -253,7 +210,10 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
         DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
     else
         DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-    DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
+    if(cpu->V_Memvirtual == 1){
+        DesalocaMemVirtual(cpu->Quant_Inteiros,cpu->Pos_Memvirtual);
+        cpu->V_Memvirtual == 0;
+        }
     free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
     *processo = ColocaOutroProcessoCPU(cpu, estadopronto,estadoexec);
@@ -272,7 +232,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   printf("\nExecucao de instrucao -> %s\n",instrucao); //Debugando
 
 
-  int i = 0,j=2,n1=0,n2=0,verificador = 0;
+  int i = 0,j=2,n1=0,n2=0,verificador = 0,x = 0;
   const char s[2] = " ";
   char *token;
   char *aux2,*aux3,ArquivoNovo[20]="", Path[40];
@@ -316,28 +276,40 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
               verificador = AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
               &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
             else
-              verificador = AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+              verificador = AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+              &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
             if(verificador){
               cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
               cpu->contadorProgramaAtual++;  //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
             }
             else{  //em caso de falta de memoria, processo de malloc e desfeito e processo é bloqueado
-              free(cpu->valorInteiro);
-              if (FIRSTFIT){
-                DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-               }
-              else{
-                DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-               }
-              AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
-              for(int i = 1;i < cpu->Quant_Inteiros;i++){
-                AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
-               }
-                //cpu->Alocado_V_inteiros = 0;
-                //RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
-                EnfileiraBloqueado(estadobloqueado, processo);
-              }
-          }
+               while(verificador == 0){
+                  if (FIRSTFIT){
+                    DesalocaFirstFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
+                   }
+                  else{
+                    DesalocaNextFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
+                   }
+                    if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1)
+                        DesalocaMemVirtual(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Memvirtual);
+                        pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 0;
+                  AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,0,0,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
+                  for(int i = 1;i < cpu->Quant_Inteiros;i++){
+                    AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,i,1,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
+                   }
+                    EnfileiraBloqueado(estadobloqueado, &pcbTable->vetor[x]);
+                  if(FIRSTFIT)
+                        verificador = AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+                        &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
+                  else
+                        verificador = AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+                        &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
+                  x++;
+                }
+                cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
+                cpu->contadorProgramaAtual++;  //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
+            }
+        }
           else{
             // printf("\nENTROU alocado");
             cpu->valorInteiro[n1]=0;
@@ -345,7 +317,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
               AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
               &cpu->Pos_Memvirtual,&cpu->V_Memvirtual); //Caso ja encontre alocado,basta inicializar tal posicao.
             else
-              AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+              AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+              &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
             if (cpu->V_Memvirtual == 1){
                 DesalocaMemVirtual(cpu->Quant_Inteiros,cpu->Pos_Memvirtual);
                 cpu->V_Memvirtual = 0;
@@ -373,7 +346,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
             &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
           else
-            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+            &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -397,7 +371,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
             &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
           else
-            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+            &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -421,7 +396,8 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
             &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
           else
-            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado);
+            AlocaNextFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
+            &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
           // printf("Variavel inteira: %d\n", cpu->valorInteiro[n1]);
           cpu->contadorProgramaAtual++;
           time->time++;
@@ -451,7 +427,10 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
           else
             DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-          DesbloqueiaProcesso(estadobloqueado,estadopronto); //Desbloqueando um processo devido a liberação de memoria
+          if(cpu->V_Memvirtual == 1){
+                DesalocaMemVirtual(cpu->Quant_Inteiros,cpu->Pos_Memvirtual);
+                cpu->V_Memvirtual == 0;
+            }
           free(cpu->valorInteiro);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
           *processo = ColocaOutroProcessoCPU(cpu, estadopronto,estadoexec);
@@ -474,7 +453,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual);
              else
                verificador = AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,0,0,
-               &novoProcesso.Estado_Processo.Pos_Alocado);
+               &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual);
 
              if(verificador){
                 novoProcesso.Estado_Processo.Inteiro[0]= cpu->valorInteiro[0];
@@ -486,33 +465,55 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                       );
                     else
                       AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,
-                      &novoProcesso.Estado_Processo.Pos_Alocado);
+                      &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual
+                      );
              }
-                if (novoProcesso.Estado_Processo.V_Memvirtual == 1){
-                    DesalocaMemVirtual(novoProcesso.Estado_Processo.Quant_Inteiros,novoProcesso.Estado_Processo.V_Memvirtual);
-                    novoProcesso.Estado_Processo.V_Memvirtual = 0;
-                    }
              EnfileiraPronto(estadopronto, &novoProcesso);
              //InserePcbTable(pcbTable, novoProcesso);
              cpu->contadorProgramaAtual++;
            }
              else{
-               free(novoProcesso.Estado_Processo.Inteiro);
-                if (FIRSTFIT){
-                    DesalocaFirstFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-               }
-                else{
-                    DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
-               }
-                AlocaDisco(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,0,0,&novoProcesso.Estado_Processo.Pos_Disco);
-                for(int i = 1;i < cpu->Quant_Inteiros;i++){
-                    AlocaDisco(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,i,1,&novoProcesso.Estado_Processo.Pos_Disco);
-               }
-               //cpu->Alocado_V_inteiros = 0;
-              // RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
-               EnfileiraBloqueado(estadobloqueado, processo);
+                while(verificador == 0){
+                      if (FIRSTFIT){
+                        DesalocaFirstFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
+                       }
+                      else{
+                        DesalocaNextFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
+                       }
+                       if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1)
+                        DesalocaMemVirtual(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Memvirtual);
+                        pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 0;
+                       }
+                      AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,0,0,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
+                      for(int i = 1;i < cpu->Quant_Inteiros;i++){
+                        AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,i,1,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
+                       }
+                        EnfileiraBloqueado(estadobloqueado, &pcbTable->vetor[x]);
+                      if(FIRSTFIT)
+                        verificador = AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,0,0,
+                        &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual);
+                      else
+                        verificador = AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,0,0,
+                        &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual
+                      );
+                        x++;
+                    }
+                    novoProcesso.Estado_Processo.Inteiro[0]= cpu->valorInteiro[0];
+                for(int k=1; k<processo->Estado_Processo.Quant_Inteiros;k++){
+                    novoProcesso.Estado_Processo.Inteiro[k]= cpu->valorInteiro[k];
+                    if(FIRSTFIT)
+                      AlocaFirstFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,
+                      &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual
+                      );
+                    else
+                      AlocaNextFit(cpu->valorInteiro,novoProcesso.Estado_Processo.Quant_Inteiros,k,1,
+                      &novoProcesso.Estado_Processo.Pos_Alocado,&novoProcesso.Estado_Processo.Pos_Memvirtual,&novoProcesso.Estado_Processo.V_Memvirtual
+                      );
+                        }
+                    EnfileiraPronto(estadopronto, &novoProcesso);
+                    //InserePcbTable(pcbTable, novoProcesso);
+                    cpu->contadorProgramaAtual++;
              }
-           }
            else{
              EnfileiraPronto(estadopronto, &novoProcesso);
              //InserePcbTable(pcbTable, novoProcesso);
