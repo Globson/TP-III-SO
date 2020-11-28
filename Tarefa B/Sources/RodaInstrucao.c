@@ -225,7 +225,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
         DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
     if(cpu->V_Memvirtual == 1){
         DesalocaMemVirtual(cpu->Quant_Inteiros,cpu->Pos_Memvirtual);
-        cpu->V_Memvirtual == 0;
+        cpu->V_Memvirtual = 0;
         }
     free(cpu->valorInteiro);
     RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
@@ -304,7 +304,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                    }
                     if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1){
                         DesalocaMemVirtual(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Memvirtual);
-                        pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 0;
+                        pcbTable->vetor[x].Estado_Processo.V_Memvirtual = 0;
                         }
                   AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,0,0,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
                   for(int i = 1;i < cpu->Quant_Inteiros;i++){
@@ -442,7 +442,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             DesalocaNextFit(cpu->Quant_Inteiros,cpu->Pos_Alocado);
           if(cpu->V_Memvirtual == 1){
                 DesalocaMemVirtual(cpu->Quant_Inteiros,cpu->Pos_Memvirtual);
-                cpu->V_Memvirtual == 0;
+                cpu->V_Memvirtual = 0;
             }
           free(cpu->valorInteiro);
           RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo); // Precisa desalocar o programa.
@@ -493,9 +493,9 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                       else{
                         DesalocaNextFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
                        }
-                       if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1)
+                       if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1){
                         DesalocaMemVirtual(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Memvirtual);
-                        pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 0;
+                        pcbTable->vetor[x].Estado_Processo.V_Memvirtual = 0;}
                        }
                       AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,0,0,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
                       for(int i = 1;i < cpu->Quant_Inteiros;i++){

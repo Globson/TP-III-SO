@@ -15,7 +15,7 @@ int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso h
                 disco.memoria[i+1-espaco+n] = temp[n];
                 disco.mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
-                printf("\nAlocado %d em %d\n no disco\n",temp[n],i+1-espaco+n);
+                // printf("\nAlocado %d em %d\n no disco\n",temp[n],i+1-espaco+n);
                 return 1;
             }
         }
@@ -23,7 +23,7 @@ int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso h
     else{
         disco.memoria[*pos+n] = temp[n];
         disco.mapadebits[*pos+n] = 1;
-        printf("\nAlocado %d em %d\n no disco\n",temp[n],*pos+n);
+        // printf("\nAlocado %d em %d\n no disco\n",temp[n],*pos+n);
         return 1;
     }
     printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
@@ -48,7 +48,7 @@ int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 cas
                 *pos = i+1-espaco;
                 firstfit.nospercorridos += *pos;
                 firstfit.totalalocados += 1;
-                printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                // printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 return 1;
             }
         }
@@ -56,7 +56,7 @@ int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 cas
     else{
         firstfit.memoria[*pos+n] = temp[n];
         firstfit.mapadebits[*pos+n] = 1;
-        printf("\nAlocado %d em %d\n",temp[n],*pos+n);
+        // printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return 1;
     }
     printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
@@ -80,7 +80,7 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso 
                 *pos = i+1-espaco;
                 nextfit.nospercorridos += *pos;
                 nextfit.totalalocados += 1;
-                printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                // printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
@@ -99,7 +99,7 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso 
                 *pos = i+1-espaco;
                 nextfit.nospercorridos += *pos;
                 nextfit.totalalocados += 1;
-                printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                // printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
@@ -108,7 +108,7 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso 
     else{
         nextfit.memoria[*pos+n] = temp[n];
         nextfit.mapadebits[*pos+n] = 1;
-        printf("\nAlocado %d em %d\n",temp[n],*pos+n);
+        // printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return 1;
     }
     printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
@@ -121,9 +121,9 @@ void DesalocaFirstFit(int qtd,int pos){
     for(int i = pos;i < MAXMEM;i++){
         if((i - pos) == qtd)
             break;
-        printf("\nDesalocando %d da pos %d",firstfit.memoria[i],i);
+        // printf("\nDesalocando %d da pos %d",firstfit.memoria[i],i);
         firstfit.mapadebits[i] = 0;
-    printf("\n");
+    // printf("\n");
     }
 }
 
@@ -131,19 +131,19 @@ void DesalocaNextFit(int qtd,int pos){
     for(int i = pos;i < MAXMEM;i++){
         if((i - pos) == qtd)
             break;
-        printf("\nDesalocando %d da pos %d",nextfit.memoria[i],i);
+        // printf("\nDesalocando %d da pos %d",nextfit.memoria[i],i);
         nextfit.mapadebits[i] = 0;
     }
-    printf("\n");
+    // printf("\n");
 }
 
 void DesalocaDisco(int qtd,int pos){
     for(int i = pos;i < MAXMEM*10;i++){
         if((i - pos) == qtd)
             break;
-        printf("\nDesalocando %d da pos %d do disco",disco.memoria[i],i);
+        // printf("\nDesalocando %d da pos %d do disco",disco.memoria[i],i);
         disco.mapadebits[i] = 0;
-    printf("\n");
+    // printf("\n");
     }
 }
 
@@ -178,7 +178,6 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   char comando, instrucao[20];
   FILE *arqPrograma;
   Processo novoProcesso;
-  printf("\n\t\t\t IPCTABLE: %d\n",estadoexec->iPcbTable );
 
   strcpy(instrucao, "");
   //printf("\ncpu->contadorProgramaAtual antes de requisitar instrucao: %d", cpu->contadorProgramaAtual);
