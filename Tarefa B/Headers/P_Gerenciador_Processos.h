@@ -25,6 +25,8 @@ typedef struct Cpu {
   int Alocado_V_inteiros;
   int Pos_Alocado;
   int V_Disco;
+  int V_Memvirtual;
+  int Pos_Memvirtual;
   int Pos_Disco;
   int Quant_Inteiros;
   int fatiaTempo;

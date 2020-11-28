@@ -17,6 +17,11 @@
 
 typedef char Instrucao[20]; //Armazena uma instrução
 
+typedef struct Memvirutal{
+    int memoria[MAXMEM*2];
+    int mapadebits[MAXMEM*2];
+}Memvirutal;
+
 typedef struct Disco{
     int memoria[MAXMEM*10];
     int mapadebits[MAXMEM*10];
@@ -41,6 +46,7 @@ typedef struct NextFit{
     int totalfragmentos;
 }NextFit;
 
+Memvirutal memvirtual;
 Disco disco;
 FirstFit firstfit;
 NextFit nextfit;
@@ -56,6 +62,8 @@ typedef struct EstadoProcesso{
   int Alocado_V_inteiros;
   int Pos_Alocado;
   int V_Disco;
+  int V_Memvirtual;
+  int Pos_Memvirtual;
   int Pos_Disco;
   int *Inteiro;
   int Cont;
@@ -68,4 +76,5 @@ typedef struct EstadoProcesso{
 int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos);
 void DesalocaDisco(int qtd,int pos);
 int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos);
-int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos);
+int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag);
+void DesalocaMemVirtual(int qtd,int pos);
