@@ -19,6 +19,7 @@ void Inicializa(EstadoEmExec *estadoexec, EstadoPronto *estadopronto, EstadoBloq
 Processo criarPrimeiroSimulado(Programa *programa, Time *time, int Quant_Instrucoes, int pid_Pai){
   Processo processo;
   time->QuantProcessosCriados++;
+  processo.iPcbTable = (int*)malloc(sizeof(int));
   processo.pid = rand()%10000;
   processo.pid_do_pai = pid_Pai;
   processo.prioridade = 0; // Necessário mexer
@@ -39,6 +40,7 @@ Processo criarPrimeiroSimulado(Programa *programa, Time *time, int Quant_Instruc
 Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instrucao,PcbTable *pcbTable){
   Processo processo;
   time->QuantProcessosCriados++;
+  processo.iPcbTable = (int*)malloc(sizeof(int));
   processo.pid = rand()%10000; //Acredito que forma de setar novo pid esteja errado.
   processo.pid_do_pai = processoPai->pid;
   processo.prioridade = processoPai->prioridade;
@@ -78,7 +80,7 @@ Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExec *e
   cpu->valorInteiro = processo.Estado_Processo.Inteiro;
   cpu->Alocado_V_inteiros = processo.Estado_Processo.Alocado_V_inteiros;
   cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
-  estadoexec->iPcbTable = processo.iPcbTable;
+  estadoexec->iPcbTable = *(processo.iPcbTable);
   return processo;
 }
 Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExec *estadoexec){
@@ -100,7 +102,7 @@ Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExe
   cpu->valorInteiro = processo.Estado_Processo.Inteiro;
   cpu->Alocado_V_inteiros = processo.Estado_Processo.Alocado_V_inteiros;
   cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
-  estadoexec->iPcbTable = processo.iPcbTable;
+  estadoexec->iPcbTable = *(processo.iPcbTable);
   return processo;
 }
 void FFVaziaPronto(EstadoPronto *estadopronto){
@@ -169,8 +171,8 @@ void InserePcbTable(PcbTable *pcbTable, Processo *processo){
   printf("\n\n\t\tinserindo na PcbTable!\n" );
   if (pcbTable->Ultimo > MAXTAM) printf("Lista esta cheia\n");
   else {
-      processo->iPcbTable = pcbTable->Ultimo;
-      printf("\n\t\t Inserindo na PCBTABLE com iPcbTable de: %d \n",processo->iPcbTable );
+      *processo->iPcbTable = pcbTable->Ultimo;
+      printf("\n\t\t Inserindo na PCBTABLE com iPcbTable de: %d \n",*processo->iPcbTable );
       pcbTable->vetor[pcbTable->Ultimo] = *processo;
       pcbTable->Ultimo++;
   }
@@ -184,8 +186,10 @@ void RetiraPcbTable(PcbTable *pcbTable, int indice, Processo *processo){
   }
   *processo = pcbTable->vetor[indice];
   pcbTable->Ultimo--;
-  for (Aux = indice; Aux < pcbTable->Ultimo; Aux++)
+  for (Aux = indice; Aux < pcbTable->Ultimo; Aux++){
       pcbTable->vetor[Aux] = pcbTable->vetor[Aux+1]; //coloquei o +1, acho q tava errado antes
+      *(pcbTable->vetor[Aux].iPcbTable) -=1;
+  }
 }
 
 void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoexec, EstadoBloqueado *estadobloqueado, EstadoPronto *estadopronto, Processo *processo){

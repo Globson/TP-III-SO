@@ -15,7 +15,7 @@ typedef struct Processo{
   char estado[15];
   int startupTime;
   int CotaCPU;
-  int iPcbTable;
+  int *iPcbTable;
   EstadoProcesso Estado_Processo;
 } Processo;
 
