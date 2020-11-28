@@ -47,6 +47,10 @@ int AlocaMemVirtual(int temp[],int qtd,int n,int *vflag,int *pos){  // retorna 0
                 memvirtual.mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
                 *vflag = 1;
+                for(int j = *pos+1;j < qtd;j++){
+                    memvirtual.mapadebits[j] = 1;
+                    printf("\nAlocado 0 em %d\n",j);
+                }
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
                 return 1;
             }
@@ -54,7 +58,6 @@ int AlocaMemVirtual(int temp[],int qtd,int n,int *vflag,int *pos){  // retorna 0
     }
     else{
         memvirtual.memoria[*pos+n] = temp[n];
-        memvirtual.mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d virtual \n",temp[n],*pos+n);
         return 1;
     }
@@ -78,13 +81,16 @@ int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vfla
                 firstfit.nospercorridos += *pos;
                 firstfit.totalalocados += 1;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                for(int j = *pos+1;j < qtd;j++){
+                    firstfit.mapadebits[j] = 1;
+                    printf("\nAlocado 0 em %d\n",j);
+                }
                 return 1;
             }
         }
     }
     else{
         firstfit.memoria[*pos+n] = temp[n];
-        firstfit.mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return 1;
     }
@@ -112,6 +118,10 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag
                 nextfit.nospercorridos += *pos;
                 nextfit.totalalocados += 1;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                for(int j = *pos+1;j < qtd;j++){
+                    nextfit.mapadebits[j] = 1;
+                    printf("\nAlocado 0 em %d\n",j);
+                }
                 nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
@@ -131,6 +141,10 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag
                 nextfit.nospercorridos += *pos;
                 nextfit.totalalocados += 1;
                 printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
+                for(int j = *pos;j < qtd;j++){
+                    nextfit.mapadebits[j] = 1;
+                    printf("\nAlocado 0 em %d\n",j);
+                }
                 nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
@@ -138,11 +152,10 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos,int *vpos,int *vflag
     }
     else{
         nextfit.memoria[*pos+n] = temp[n];
-        nextfit.mapadebits[*pos+n] = 1;
         printf("\nAlocado %d em %d\n",temp[n],*pos+n);
         return 1;
     }
-    printf("\nERRO! Nao foi possivel alocar o progama devido a falta de espaco\n");
+
     if(*vflag == 0){
         AlocaMemVirtual(temp,qtd,n,vflag,vpos);
         //npos = MMU(*vpos);
@@ -271,7 +284,6 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
             // printf("\nENTROU em nao alocado");
             cpu->valorInteiro = (int*) malloc(sizeof(int)*cpu->Quant_Inteiros);
             cpu->valorInteiro[n1]=0;
-
             if(FIRSTFIT)
               verificador = AlocaFirstFit(cpu->valorInteiro,cpu->Quant_Inteiros,n1,cpu->Alocado_V_inteiros,&cpu->Pos_Alocado,
               &cpu->Pos_Memvirtual,&cpu->V_Memvirtual);
@@ -282,7 +294,7 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
               cpu->Alocado_V_inteiros =1; //Foi alocado, porem apenas posição especificada foi inicializada com 0;
               cpu->contadorProgramaAtual++;  //Contador do programa atual so incrementa se instrucao D foi realizada com sucesso
             }
-            else{  //em caso de falta de memoria, processo de malloc e desfeito e processo é bloqueado
+            else{
                while(verificador == 0){
                   if (FIRSTFIT){
                     DesalocaFirstFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
@@ -290,9 +302,10 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
                   else{
                     DesalocaNextFit(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Alocado);
                    }
-                    if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1)
+                    if(pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 1){
                         DesalocaMemVirtual(pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,pcbTable->vetor[x].Estado_Processo.Pos_Memvirtual);
                         pcbTable->vetor[x].Estado_Processo.V_Memvirtual == 0;
+                        }
                   AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,0,0,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
                   for(int i = 1;i < cpu->Quant_Inteiros;i++){
                     AlocaDisco(pcbTable->vetor[x].Estado_Processo.Inteiro,pcbTable->vetor[x].Estado_Processo.Quant_Inteiros,i,1,&pcbTable->vetor[x].Estado_Processo.Pos_Disco);
