@@ -30,11 +30,19 @@ void iniciadisco(){
     }
 }
 
+void iniciamemvirtual(){
+    for(int i = 0;i < MAXMEM*2;i++){
+        memvirtual.mapadebits[i] = 0;
+        memvirtual.memoria[i] = 0;
+    }
+}
+
 
 int main(int argc, char const *argv[]) {
   srand(time(NULL));
   iniciamemoria();
   iniciadisco();
+  iniciamemvirtual();
   //Test(memoria);
   Executar_P_Controle();
   printf("\n\tExecutou TUDO!");
