@@ -92,14 +92,14 @@ int Executar_P_Controle(){
     read(fd[0], str_recebida, sizeof(str_recebida));
     printf("String recebida pelo Gerenciador de PID %i enviada pelo Controle: '%s'\n\n", getpid(), str_recebida);
 
+    InserePcbTable(&pcbTable, &processo);
     EnfileiraPronto(&estadopronto, &processo);
 
     // ImprimePronto(&estadopronto);
 
-    InserePcbTable(&pcbTable, processo);
 
 
-    processo = colocarProcessoCPU(&cpu, &estadopronto);
+    processo = colocarProcessoCPU(&cpu, &estadopronto,&estadoexec);
     for (unsigned int j = 0; j < strlen(str_recebida); j++) {
         //printf("\n%c\n", str_recebida[j]);
         switch (str_recebida[j]) {
