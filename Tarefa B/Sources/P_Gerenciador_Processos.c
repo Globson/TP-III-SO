@@ -2,7 +2,6 @@
 #include "../Headers/RodaInstrucao.h"
 
 void Inicializa(EstadoEmExec *estadoexec, EstadoPronto *estadopronto, EstadoBloqueado *estadobloqueado,PcbTable *pcbTable, Cpu *cpu, Time *time){
-  estadoexec->iPcbTable = 0;
   FFVaziaPronto(estadopronto);
   FFVaziaBloqueado(estadobloqueado);
   FLVaziaPcbTable(pcbTable);
@@ -37,7 +36,7 @@ Processo criarPrimeiroSimulado(Programa *programa, Time *time, int Quant_Instruc
   strcpy(processo.estado, "PRONTO");
   return processo;
 }
-Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instrucao){
+Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instrucao,PcbTable *pcbTable){
   Processo processo;
   time->QuantProcessosCriados++;
   processo.pid = rand()%10000; //Acredito que forma de setar novo pid esteja errado.
@@ -58,9 +57,10 @@ Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instru
       strcpy(processo.Estado_Processo.Programa[i], processoPai->Estado_Processo.Programa[i]);
   }
   strcpy(processo.estado, "PRONTO");
+  InserePcbTable(pcbTable, &processo);
   return processo;
 }
-Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
+Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExec *estadoexec){
   Processo processo;
 
   DesenfileiraPronto(estadopronto, &processo);
@@ -78,13 +78,14 @@ Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto){
   cpu->valorInteiro = processo.Estado_Processo.Inteiro;
   cpu->Alocado_V_inteiros = processo.Estado_Processo.Alocado_V_inteiros;
   cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
+  estadoexec->iPcbTable = processo.iPcbTable;
   return processo;
 }
-Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,PcbTable *pcbTable){
+Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExec *estadoexec){
   Processo processo;
 
   DesenfileiraPronto(estadopronto, &processo);
-  InserePcbTable(pcbTable, processo);
+  //InserePcbTable(pcbTable, &processo);
   cpu->programa.Tam = processo.Estado_Processo.Tam;
 
   FFilaVazia(&cpu->programa);
@@ -99,6 +100,7 @@ Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,PcbTable *p
   cpu->valorInteiro = processo.Estado_Processo.Inteiro;
   cpu->Alocado_V_inteiros = processo.Estado_Processo.Alocado_V_inteiros;
   cpu->Pos_Alocado = processo.Estado_Processo.Pos_Alocado;
+  estadoexec->iPcbTable = processo.iPcbTable;
   return processo;
 }
 void FFVaziaPronto(EstadoPronto *estadopronto){
@@ -163,14 +165,18 @@ void FLVaziaPcbTable(PcbTable *pcbTable){
 int VaziaPcbTable(PcbTable *pcbTable){
   return (pcbTable->Primeiro == pcbTable->Ultimo);
 }
-void InserePcbTable(PcbTable *pcbTable, Processo processo){
+void InserePcbTable(PcbTable *pcbTable, Processo *processo){
+  printf("\n\n\t\tinserindo na PcbTable!\n" );
   if (pcbTable->Ultimo > MAXTAM) printf("Lista esta cheia\n");
   else {
-      pcbTable->vetor[pcbTable->Ultimo] = processo;
+      processo->iPcbTable = pcbTable->Ultimo;
+      printf("\n\t\t Inserindo na PCBTABLE com iPcbTable de: %d \n",processo->iPcbTable );
+      pcbTable->vetor[pcbTable->Ultimo] = *processo;
       pcbTable->Ultimo++;
   }
 }
 void RetiraPcbTable(PcbTable *pcbTable, int indice, Processo *processo){
+  printf("\n\n\t\tremovendo da PcbTable!\n" );
   int Aux;
   if (VaziaPcbTable(pcbTable) || indice >= pcbTable->Ultimo) {
       printf("\n\tErro! Posicao nao existe na PcbTable!\n");
@@ -227,12 +233,12 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
         AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
         }
       //cpu->Alocado_V_inteiros = 0;
-      RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
+      //RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
       EnfileiraBloqueado(estadobloqueado, processo);
-      *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
+      *processo = ColocaOutroProcessoCPU(cpu,estadopronto,estadoexec);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
     }
    else if(!strcmp(processo->estado,"BLOQUEADO")){ //Caso uma instrucao de bloqueio tenha sido realizada
-     *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);
+     *processo = ColocaOutroProcessoCPU(cpu,estadopronto,estadoexec);
    }
 }
 
@@ -366,9 +372,9 @@ void ExecutaCPU2(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoe
         AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
         }
       cpu->Alocado_V_inteiros = 0;
-      RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
+    //  RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
       EnfileiraBloqueado(estadobloqueado, processo);
-      *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
+      *processo = ColocaOutroProcessoCPU(cpu,estadopronto,estadoexec);//Ja que o processo atual foi bloqueado, colocaremos outro na CPU
     }
   else if(cpu->fatiaTempoUsada < cpu->fatiaTempo) {
       if(processo->prioridade> 0 && processo->prioridade<=3){
@@ -378,6 +384,6 @@ void ExecutaCPU2(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoe
           }
   }
    else if(!strcmp(processo->estado,"BLOQUEADO")){ //Caso uma instrucao de bloqueio tenha sido realizada
-     *processo = ColocaOutroProcessoCPU(cpu,estadopronto,pcbTable);
+     *processo = ColocaOutroProcessoCPU(cpu,estadopronto,estadoexec);
    }
 }

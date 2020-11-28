@@ -15,6 +15,7 @@ typedef struct Processo{
   char estado[15];
   int startupTime;
   int CotaCPU;
+  int iPcbTable;
   EstadoProcesso Estado_Processo;
 } Processo;
 
@@ -54,9 +55,9 @@ typedef struct PcbTable { //é um array com uma entrada para cada processo simul
 
 void Inicializa(EstadoEmExec *estadoexec, EstadoPronto *estadopronto, EstadoBloqueado *estadobloqueado,PcbTable *pcbTable, Cpu *cpu, Time *time);
 Processo criarPrimeiroSimulado(Programa *programa, Time *time, int Quant_Instrucoes, int pid_Pai);
-Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instrucao);
-Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto);
-Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,PcbTable *pcbTable);
+Processo criarProcessoSimulado(Time *time, Processo *processoPai, int Num_instrucao,PcbTable *pcbTable);
+Processo colocarProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExec *estadoexec);
+Processo ColocaOutroProcessoCPU(Cpu *cpu, EstadoPronto *estadopronto,EstadoEmExec *estadoexec);
 void FFVaziaPronto(EstadoPronto *estadopronto);
 void FFVaziaBloqueado(EstadoBloqueado *estadobloqueado);
 int VaziaPronto(EstadoPronto *estadopronto);
@@ -67,7 +68,7 @@ int DesenfileiraPronto(EstadoPronto *estadopronto, Processo *processo);
 int DesenfileiraBloqueado(EstadoBloqueado *estadobloqueado, Processo *processo);
 void FLVaziaPcbTable(PcbTable *pcbTable);
 int VaziaPcbTable(PcbTable *pcbTable);
-void InserePcbTable(PcbTable *pcbTable, Processo processo);
+void InserePcbTable(PcbTable *pcbTable, Processo *processo);
 void RetiraPcbTable(PcbTable *pcbTable, int indice, Processo *processo);
 void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoexec, EstadoBloqueado *estadobloqueado, EstadoPronto *estadopronto, Processo *processo);
 void ExecutaCPU2(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoexec, EstadoBloqueado *estadobloqueado, EstadoPronto *estadopronto, Processo *processo);
