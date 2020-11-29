@@ -13,6 +13,8 @@ void Inicializa(EstadoEmExec *estadoexec, EstadoPronto *estadopronto, EstadoBloq
   cpu->fatiaTempo = 0;
   cpu->contadorProgramaAtual = 0;
   cpu->valorInteiro = 0;
+  cpu->V_Memvirtual = 0;
+  cpu->V_Disco = 0;
   time->time = 0;
   time->QuantProcessosCriados = 0;
 }
@@ -232,10 +234,12 @@ void ExecutaCPU(Cpu *cpu, Time *time, PcbTable *pcbTable, EstadoEmExec *estadoex
         processo->prioridade++;
         pcbTable->vetor[estadoexec->iPcbTable].prioridade++;
       }
-      AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
-      for(int i = 1;i < cpu->Quant_Inteiros;i++){
-        AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
-        }
+      if(cpu->Alocado_V_inteiros){
+          AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,0,0,&cpu->Pos_Disco);
+          for(int i = 1;i < cpu->Quant_Inteiros;i++){
+            AlocaDisco(cpu->valorInteiro,cpu->Quant_Inteiros,i,1,&cpu->Pos_Disco);
+            }
+      }
       //cpu->Alocado_V_inteiros = 0;
       //RetiraPcbTable(pcbTable, estadoexec->iPcbTable, processo);
       EnfileiraBloqueado(estadobloqueado, processo);
