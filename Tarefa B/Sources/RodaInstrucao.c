@@ -215,7 +215,6 @@ void RodaInstrucao(Cpu *cpu, Time *time, EstadoEmExec *estadoexec, PcbTable *pcb
   char comando, instrucao[20];
   FILE *arqPrograma;
   Processo novoProcesso;
-  printf("\n\t\t\t IPCTABLE: %d\n",estadoexec->iPcbTable );
 
   strcpy(instrucao, "");
   //printf("\ncpu->contadorProgramaAtual antes de requisitar instrucao: %d", cpu->contadorProgramaAtual);

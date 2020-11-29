@@ -170,7 +170,6 @@ int VaziaPcbTable(PcbTable *pcbTable){
   return (pcbTable->Primeiro == pcbTable->Ultimo);
 }
 void InserePcbTable(PcbTable *pcbTable, Processo *processo){
-  printf("\n\n\t\tinserindo na PcbTable!\n" );
   if (pcbTable->Ultimo > MAXTAM) printf("Lista esta cheia\n");
   else {
       *processo->iPcbTable = pcbTable->Ultimo;
@@ -180,7 +179,6 @@ void InserePcbTable(PcbTable *pcbTable, Processo *processo){
   }
 }
 void RetiraPcbTable(PcbTable *pcbTable, int indice, Processo *processo){
-  printf("\n\n\t\tremovendo da PcbTable!\n" );
   int Aux;
   if (VaziaPcbTable(pcbTable) || indice >= pcbTable->Ultimo) {
       printf("\n\tErro! Posicao nao existe na PcbTable!\n");

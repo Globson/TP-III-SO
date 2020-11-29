@@ -16,9 +16,6 @@ int AlocaDisco(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 caso h
                 disco.mapadebits[i+1-espaco+n] = 1;
                 *pos = i+1-espaco;
                 // printf("\nAlocado %d em %d\n no disco\n",temp[n],i+1-espaco+n);
-                for(int j = *pos+1;j < *pos+qtd;j++){
-                    disco.mapadebits[j] = 1;
-                }
                 return 1;
             }
         }
@@ -52,9 +49,6 @@ int AlocaFirstFit(int temp[],int qtd,int n,int flag,int *pos){  // retorna 0 cas
                 firstfit.nospercorridos += *pos;
                 firstfit.totalalocados += 1;
                 // printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
-                for(int j = *pos+1;j < *pos+qtd;j++){
-                    firstfit.mapadebits[j] = 1;
-                }
                 return 1;
             }
         }
@@ -87,9 +81,6 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso 
                 nextfit.nospercorridos += *pos;
                 nextfit.totalalocados += 1;
                 // printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
-                for(int j = *pos+1;j < *pos+qtd;j++){
-                    nextfit.mapadebits[j] = 1;
-                }
                 nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
@@ -109,9 +100,6 @@ int AlocaNextFit(int temp[],int qtd,int n,int flag,int *pos){ // retorna 0 caso 
                 nextfit.nospercorridos += *pos;
                 nextfit.totalalocados += 1;
                 // printf("\nAlocado %d em %d\n",temp[n],i+1-espaco+n);
-                for(int j = *pos+1;j < *pos+qtd;j++){
-                    nextfit.mapadebits[j] = 1;
-                }
                 nextfit.ultimaalocacao= *pos+qtd;
                 return 1;
             }
